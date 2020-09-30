@@ -1,7 +1,7 @@
 use std::env;
-use std::fs::File;
-use std::io;
-use std::io::prelude::*;
+
+mod chip8;
+mod cpu;
 /* 
 Chip8State
 |- Memory[4096] <- store rom starting at 512(0x200)
@@ -24,33 +24,29 @@ fn main() {
     let filename: &String = &args[1];
     println!("The ROM is: {}", filename);
 
-        // .expect("Could not read file");
-    
-    // let mut i = 0x200;
-    // let mut memory: [u8; 4096];
+    let mut chip8 = chip8::Chip8::init();
+    match cpu::load_rom(filename, &mut chip8) {
+        Ok(_) => println!("Woah"),
+        Err(_) => println!("Nope")
+    };
 
-    // for byte in rom.bytes(){
-    //     memory[i] = byte;
-    //     i+=1;
-    // }
-
-    load_rom(filename);
+    let opcode = cpu::read_op(chip8);
 
 
-    // let mem = &memory[0..20];
-    // println!("Program: {:#?}", mem);
+    println!("opcode? {:x}", opcode);
+
 }
 
 
-fn load_rom(filename: &String) -> io::Result<()> {
-    let mut memory: [u8; 4096] = [0; 4096];
-    let rom: File = File::open(filename).expect("fuck");
-    let mut i = 0x200;
-    for byte in rom.bytes(){
-        memory[i] = byte.unwrap();
-        println!("index: {} | Byte! {:x}", i, memory[i]);
-        i+=1;
-    }
-    println!("memory 512 {:x} {:x}", memory[0x200], memory[512]);
-    Ok(())
-}
+// fn load_rom(filename: &String) -> io::Result<()> {
+//     let mut memory: [u8; 4096] = [0; 4096];
+//     let rom: File = File::open(filename).expect("fuck");
+//     let mut i = 0x200;
+//     for byte in rom.bytes(){
+//         memory[i] = byte.unwrap();
+//         println!("index: {} | Byte! {:x}", i, memory[i]);
+//         i+=1;
+//     }
+//     println!("memory 512 {:x} {:x}", memory[0x200], memory[512]);
+//     Ok(())
+// }
