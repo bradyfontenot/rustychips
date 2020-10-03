@@ -61,8 +61,8 @@ impl Chip8 {
   }
 
   // store byte in memory addr
-  pub fn set_memory(mut self, addr: usize, val: u8){
-    self.memory[addr] = val;
+  pub fn set_memory(&mut self, addr: u16, val: u8){
+    self.memory[addr as usize] = val;
   }
 
   // get byte from memory addr
@@ -71,23 +71,37 @@ impl Chip8 {
   }
 
   // store byte in V Register
-  // pub fn set_v_byte(){}
+  pub fn set_v_reg(&mut self, addr: u16, val: u8){
+    self.v_register[addr as usize] = val;
+  }
 
   // get byte from V Register
-  // pub fn get_v_byte(){}
+  pub fn get_v_reg(&self, addr: u16) -> u8 {
+    self.v_register[addr as usize]
+  }
 
   // store byte in I Register
-  // pub fn set_i_byte(){}
+  pub fn set_i_reg(&mut self, addr: u16){
+    self.i_register = addr;
+  }
 
   // get byte from I Register
-  // pub fn get_i_byte(){}
+  pub fn get_i_reg(&self) -> u16 {
+    self.i_register
+  }
 
   // store addr in PC
   // pub fn set_pc(){}
 
   // get addr from PC
-  // pub fn get_pc(){}
+  pub fn get_pc(&self) -> u16 {
+    self.pc
+  }
 
+  // increment program counter by 2
+  pub fn increment_pc(&mut self){
+    self.pc = self.pc + 2;
+  }
   // store addr in SP
   // pub fn set_sp(){}
 
@@ -100,10 +114,7 @@ impl Chip8 {
   // get instruction from stack
   // pub fn pop_stack(){}
 
-  // increment program counter by 2
-  pub fn increment_pc(mut self){
-    self.pc = self.pc + 2;
-  }
+
 }
 
 
