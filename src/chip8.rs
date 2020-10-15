@@ -71,17 +71,17 @@ impl Chip8 {
   }
 
   // get byte from memory addr
-  pub fn get_memory(&self, addr: u16) -> u8 {
+  pub fn memory(&self, addr: u16) -> u8 {
     self.memory[addr as usize]
   }
 
   // store byte in V Register
-  pub fn set_v_reg(&mut self, addr: u16, val: u8){
+  pub fn set_v_reg(&mut self, addr: u8, val: u8){
     self.v_register[addr as usize] = val;
   }
 
   // get byte from V Register
-  pub fn get_v_reg(&self, addr: u16) -> u8 {
+  pub fn v_register(&self, addr: u8) -> u8 {
     self.v_register[addr as usize]
   }
 
@@ -91,12 +91,14 @@ impl Chip8 {
   }
 
   // get byte from I Register
-  pub fn get_i_reg(&self) -> u16 {
+  pub fn i_register(&self) -> u16 {
     self.i_register
   }
 
   // store addr in PC
-  // pub fn set_pc(){}
+  pub fn set_pc(&mut self, addr: u16){
+    self.pc = addr;
+  }
 
   // get addr from PC
   pub fn get_pc(&self) -> u16 {
@@ -104,35 +106,52 @@ impl Chip8 {
   }
 
   // increment program counter by 2
-  pub fn increment_pc(&mut self){
+  pub fn pc_plus_2(&mut self){
     self.pc = self.pc + 2;
   }
+  
   // store addr in SP
-  // pub fn set_sp(){}
+  pub fn set_sp(&mut self, idx: u8){
+    self.sp = idx;
+  }
 
   // get addr from sp
-  // pub fn get_sp(){}
+  pub fn get_sp(&self) -> u8 {
+    self.sp
+  }
 
   // push instruction to stack
-  // pub fn push_stack(){}
+  pub fn push_stack(&mut self, addr: u16){
+    self.sp += 1;
+    self.stack[self.sp as usize] = addr;
+  }
 
   // get instruction from stack
-  // pub fn pop_stack(){}
+  pub fn pop_stack(&mut self) -> u16 {
+    let popped = self.stack[self.sp as usize];
+    self.sp -= 1;
 
+    popped
+  }
+
+  pub fn delay_timer(&self) -> u8 {
+    self.delay_timer
+  }
+
+  pub fn set_delay_timer(&mut self, val: u8){
+    self.delay_timer = val;
+  }
+
+  pub fn sound_timer(&self) -> u8 {
+    self.sound_timer
+  }
+
+  pub fn set_sound_timer(&mut self, val: u8){
+    self.sound_timer = val;
+  }
 
 }
 
-
-
-
-
-
-/* 
-set v_register
-get v_register
-set i_register
-get i_register
- */
 
 //  ******TESTS******
 
