@@ -24,13 +24,15 @@ pub const FONT_SET: [u8; 80] = [
 
 
 pub struct Chip8{
-   pub v_register: [u8; V_REGISTER_SIZE],      // Vx Register
-   pub i_register: u16,                        // I Register
-   pub pc: u16,                                // Program Counter
-   pub sp: u8,                                 // Stack Pointer
-   pub stack: [u16; STACK_SIZE],               // Stack
-   pub memory: [u8; MEMORY_SIZE],              // RAM
-  //  font: [u16; FONT_SIZE]
+  v_register: [u8; V_REGISTER_SIZE],      // V Register
+  i_register: u16,                        // I Register
+  pc: u16,                                // Program Counter
+  sp: u8,                                 // Stack Pointer
+  stack: [u16; STACK_SIZE],               // Stack
+  memory: [u8; MEMORY_SIZE],              // RAM
+  sound_timer: u8,
+  delay_timer: u8,
+  pub fonts: [u8; 80]
 }
 
 
@@ -44,7 +46,10 @@ impl Chip8 {
       pc: 0x200,
       sp: 0x000,
       stack: [0; 16],
-      memory: [0; 4096]
+      memory: [0; 4096],
+      sound_timer: 0,
+      delay_timer: 0,
+      fonts: FONT_SET
     };
   
     Chip8::load_font_set(&mut chippy);
