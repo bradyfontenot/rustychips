@@ -14,7 +14,7 @@ pub struct Opcode{
   y: u8,        // high bit of the low byte
   kk: u8,       // lowest byte
   nnn: u16,     // lowest 12 bits
-  n: u16        // lowest bit
+  n: u8        // lowest bit
 }
 
 // load_rom() loads file into memory
@@ -32,8 +32,8 @@ pub fn load_rom(filename: &String,  chip8: &mut Chip8) -> io::Result<()> {
   }
 
   // Printing for debug purposes
-  println!("memory 512 {:x} {:x}", chip8.memory(0x200), chip8.memory(512));
-  println!("Font Set: {:x}", chip8.memory(0));
+  // println!("memory 512 {:x} {:x}", chip8.memory(0x200), chip8.memory(512));
+  // println!("Font Set: {:x}", chip8.memory(0));
   Ok(())
 }
 
@@ -51,6 +51,7 @@ pub fn read_opcode(chip8: &mut Chip8) -> Opcode {
   println!("Opcode.kk: {:x}", opcode.kk);
   println!("Opcode.nnn: {:x}", opcode.nnn);
   println!("Opcode.n: {:x}", opcode.n);
+  println!("**************************");
 
   opcode
 }
@@ -65,11 +66,11 @@ fn build_opcode(chip8: &mut Chip8) -> Opcode {
   Opcode{
     code: opcode,
     p:    opcode & 0xF000,
-    x:    (opcode & 0x0F) as u8,
-    y:    (opcode & 0x00F) as u8,
+    x:    ((opcode & 0x0F00) >> 8) as u8,
+    y:    ((opcode & 0x00F0) >> 4) as u8,
     kk:   (opcode & 0xFF) as u8,
     nnn:  opcode & 0xFFF,
-    n:    opcode & 0xF
+    n:    (opcode & 0xF) as u8
   }
 }
 
@@ -83,7 +84,7 @@ pub fn execute(opcode: Opcode, chip8: &mut Chip8, display: &mut Display){
       },
       _ => println!("0x000 Not Handled")
     },
-    0x1000 => chip8.set_pc(opcode.nnn),       // set 
+    0x1000 => chip8.set_pc(opcode.nnn),
     0x2000 => {
       chip8.push_stack(chip8.get_pc());
       chip8.set_pc(opcode.nnn);
@@ -92,7 +93,11 @@ pub fn execute(opcode: Opcode, chip8: &mut Chip8, display: &mut Display){
     0x4000 => if chip8.v_register(opcode.x) != opcode.kk {chip8.pc_plus_2()},
     0x5000 => if chip8.v_register(opcode.x) == chip8.v_register(opcode.y) {chip8.pc_plus_2()},
     0x6000 => chip8.set_v_reg(opcode.x, opcode.kk),
-    0x7000 => chip8.set_v_reg(opcode.x, chip8.v_register(opcode.x) + opcode.kk),    // Vx + NN
+    // 0x7000 => chip8.set_v_reg(opcode.x, chip8.v_register(opcode.x) + opcode.kk),    // Vx + NN
+    0x7000 => match(chip8.v_register(opcode.x)).overflowing_add(opcode.kk){
+      (val, true) => chip8.set_v_reg(opcode.x, val),  // Vx + NN
+      (val, false) => chip8.set_v_reg(opcode.x, val)  // Vx + NN
+    },
     0x8000 => match opcode.n {
       0x0000 => chip8.set_v_reg(opcode.x, opcode.y as u8),
       0x0001 => chip8.set_v_reg(opcode.x, (opcode.x | opcode.y) as u8),
@@ -145,12 +150,22 @@ pub fn execute(opcode: Opcode, chip8: &mut Chip8, display: &mut Display){
       let mut x_coord: usize;
       chip8.set_v_reg(0xF, 0);
       for y in 0..opcode.n {
-        y_coord = ((chip8.v_register(opcode.y) as u16 + y) % 32) as usize;
-        let sprite = chip8.memory(addr + y);
+        y_coord = ((chip8.v_register(opcode.y) + y) % 32) as usize;
+        let sprite = chip8.memory(addr + y as u16);
         for x in 0..8{
-          x_coord = ((chip8.v_register(opcode.x) as u16 + x) % 64) as usize;
+
+          x_coord = ((chip8.v_register(opcode.x) + x) % 64) as usize;
           let val = display.pixels[y_coord][x_coord] & ((sprite >> (7-x)) & 1);
           chip8.set_v_reg(0xF, val);
+          // println!("Opcode: {:x}", opcode.code);
+          // println!("Opcode.y: {}", opcode.y);
+          // println!("Vy: {}", chip8.v_register(opcode.y));
+          // println!("Y: {}", y_coord);
+          // println!("X: {}", x_coord);
+          // println!("Opcode.x: {}", opcode.x);
+          // println!("Vx: {}", chip8.v_register(opcode.x));
+          // println!("VF: {}", chip8.v_register(0xF));
+          // println!("*************************");
           display.pixels[y_coord][x_coord] ^= (sprite >> 7-x) & 1;
 
         }
@@ -190,6 +205,6 @@ pub fn execute(opcode: Opcode, chip8: &mut Chip8, display: &mut Display){
 
 
 /* TODO:
-set up timers, keyboard map and look at graphics
+set up timers, keyboard map
 write tests for chip8 and cpu.
   */
