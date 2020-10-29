@@ -29,5 +29,5 @@ Source: [Wikipedia](https://en.wikipedia.org/wiki/CHIP-8)
 - clone repo
 - cd into root directory
 - in the terminal: `cargo run <path to rom>`
-  - (ex: `cargo run ./roms/chip_picture.ch8`) 
+  - (ex: `cargo run ./roms/chip8_picture.ch8`) 
 - press `esc` to close window
