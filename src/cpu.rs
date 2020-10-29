@@ -120,7 +120,7 @@ pub fn execute(opcode: Opcode, chip8: &mut Chip8, display: &mut Display){
         },
       },
       0x0006 => {
-        chip8.set_v_reg(0xF, chip8.v_register(opcode.x) & 0xF);
+        chip8.set_v_reg(0xF, chip8.v_register(opcode.x) & 1);
         chip8.set_v_reg(opcode.x, chip8.v_register(opcode.x) >> 1);
       }, 
       0x0007 => match (chip8.v_register(opcode.y)).overflowing_sub(chip8.v_register(opcode.x)){
