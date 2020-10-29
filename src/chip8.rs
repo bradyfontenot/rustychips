@@ -22,7 +22,6 @@ pub const FONT_SET: [u8; 80] = [
   0xF0, 0x80, 0xF0, 0x80, 0x80  // F
 ];
 
-
 pub struct Chip8{
   v_register: [u8; V_REGISTER_SIZE],      // V Register
   i_register: u16,                        // I Register
@@ -101,7 +100,7 @@ impl Chip8 {
   }
 
   // get addr from PC
-  pub fn get_pc(&self) -> u16 {
+  pub fn pc(&self) -> u16 {
     self.pc
   }
 
@@ -110,16 +109,6 @@ impl Chip8 {
     self.pc = self.pc + 2;
   }
   
-  // store addr in SP
-  pub fn set_sp(&mut self, idx: u8){
-    self.sp = idx;
-  }
-
-  // get addr from sp
-  pub fn get_sp(&self) -> u8 {
-    self.sp
-  }
-
   // push instruction to stack
   pub fn push_stack(&mut self, addr: u16){
     self.sp += 1;
