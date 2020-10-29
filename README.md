@@ -5,7 +5,7 @@ My attempt to learn Rust doing something fun. Surely not idiomatic Rust yet and 
 
 ## What is Chip8?
 CHIP-8 is an interpreted programming language, developed by Joseph Weisbecker. It was initially used on the COSMAC VIP and Telmac 1800 8-bit microcomputers in the mid-1970s. CHIP-8 programs are run on a CHIP-8 virtual machine. It was made to allow video games to be more easily programmed for these computers.  
-Source: [Wikipedia](https://en.wikipedia.org/wiki/CHIP-8)
+Source: [Wikipedia](https://en.wikipedia.org/wiki/CHIP-8).  
 Specifications: [Cowgod's Chip-8 Technicl Reference](http://devernay.free.fr/hacks/chip8/C8TECH10.HTM#2.2)
 
 ### TLDR -> You can **play Pong!**
