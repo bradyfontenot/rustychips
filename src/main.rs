@@ -12,7 +12,7 @@ mod cpu;
 mod display;
 
 fn main() {
-
+    let mut timer_counter: u128 = 0;
     let args: Vec<String> = env::args().collect();
     let filename: &String = &args[1];
     println!("The ROM is: {}", filename);
@@ -31,27 +31,31 @@ fn main() {
         Err(_) => println!("Nope")
     };
 
-    // 'running: loop {
-    //     display.draw_canvas();
-
+    'running: loop {
         for event in event_pump.poll_iter() {
             match event {
                 Event::Quit {..} |
                 Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
-                    // break 'running
+                    break 'running
                 },
                 _ => {}
             }
         }
-    //     ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
-    //         // ::std::thread::sleep(Duration::new(5, 1_000_000_000u32));
-    // }
-    loop {
-    display.draw_canvas();
-    cpu::execute(cpu::read_opcode(&mut chip8), &mut chip8, &mut display);
-    // thread::sleep(time::Duration::from_millis(300));
-    std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
 
+        display.draw_canvas();
+        cpu::execute(cpu::read_opcode(&mut chip8), &mut chip8, &mut display);
+        timer_counter += 1;
+        if timer_counter == 16666666{
+            if chip8.delay_timer() != 0{
+                chip8.set_delay_timer(chip8.delay_timer() - 1);
+            }
+            if chip8.sound_timer() != 0{
+                chip8.set_sound_timer(chip8.sound_timer() - 1);
+            }
+            timer_counter = 0;
+        }
+        // thread::sleep(time::Duration::from_millis(30));
+        std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 120));
     }
 
 
