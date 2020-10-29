@@ -26,7 +26,7 @@ pub fn load_rom(filename: &String,  chip8: &mut Chip8) -> io::Result<()> {
       chip8.set_memory(i, byte.unwrap());
       
       // Debug printout
-      println!("index: {} {:x} | Byte! {:x}", i, i, chip8.memory(i));
+      // println!("index: {} {:x} | Byte! {:x}", i, i, chip8.memory(i));
       
       i+=1;
   }
@@ -44,14 +44,14 @@ pub fn read_opcode(chip8: &mut Chip8) -> Opcode {
   // increment pc by 2
   chip8.pc_plus_2();
 
-  println!("Opcode: {:x}", opcode.code);
-  println!("Opcode.p: {:x}", opcode.p);
-  println!("Opcode.x: {:x}", opcode.x);
-  println!("Opcode.y: {:x}", opcode.y);
-  println!("Opcode.kk: {:x}", opcode.kk);
-  println!("Opcode.nnn: {:x}", opcode.nnn);
-  println!("Opcode.n: {:x}", opcode.n);
-  println!("**************************");
+  // println!("Opcode: {:x}", opcode.code);
+  // println!("Opcode.p: {:x}", opcode.p);
+  // println!("Opcode.x: {:x}", opcode.x);
+  // println!("Opcode.y: {:x}", opcode.y);
+  // println!("Opcode.kk: {:x}", opcode.kk);
+  // println!("Opcode.nnn: {:x}", opcode.nnn);
+  // println!("Opcode.n: {:x}", opcode.n);
+  // println!("**************************");
 
   opcode
 }
@@ -59,8 +59,8 @@ pub fn read_opcode(chip8: &mut Chip8) -> Opcode {
 // build_opcode() - opcodes are 2 bytes but bytes are read from memory one at a time
 // so byte pairs in sequence need to be combined to build a full opcode
 fn build_opcode(chip8: &mut Chip8) -> Opcode {
-  let hi_byte: u8 = chip8.memory(chip8.get_pc());
-  let low_byte: u8 = chip8.memory(chip8.get_pc() + 1);
+  let hi_byte: u8 = chip8.memory(chip8.pc());
+  let low_byte: u8 = chip8.memory(chip8.pc() + 1);
   let opcode: u16 = (hi_byte as u16 * 0x100) + (low_byte as u16);
 
   Opcode{
@@ -86,14 +86,13 @@ pub fn execute(opcode: Opcode, chip8: &mut Chip8, display: &mut Display){
     },
     0x1000 => chip8.set_pc(opcode.nnn),
     0x2000 => {
-      chip8.push_stack(chip8.get_pc());
+      chip8.push_stack(chip8.pc());
       chip8.set_pc(opcode.nnn);
     },
     0x3000 => if chip8.v_register(opcode.x) == opcode.kk {chip8.pc_plus_2()},
     0x4000 => if chip8.v_register(opcode.x) != opcode.kk {chip8.pc_plus_2()},
     0x5000 => if chip8.v_register(opcode.x) == chip8.v_register(opcode.y) {chip8.pc_plus_2()},
     0x6000 => chip8.set_v_reg(opcode.x, opcode.kk),
-    // 0x7000 => chip8.set_v_reg(opcode.x, chip8.v_register(opcode.x) + opcode.kk),    // Vx + NN
     0x7000 => match(chip8.v_register(opcode.x)).overflowing_add(opcode.kk){
       (val, true) => chip8.set_v_reg(opcode.x, val),  // Vx + NN
       (val, false) => chip8.set_v_reg(opcode.x, val)  // Vx + NN
@@ -140,7 +139,7 @@ pub fn execute(opcode: Opcode, chip8: &mut Chip8, display: &mut Display){
     },
     0x9000 => if chip8.v_register(opcode.x) != chip8.v_register(opcode.y) {chip8.pc_plus_2()},
     0xA000 => chip8.set_i_reg(opcode.nnn),
-    0xB000 => chip8.set_pc(opcode.p + opcode.nnn),
+    0xB000 => chip8.set_pc(opcode.nnn + chip8.v_register(0) as u16),
     0xC000 => {
       let mut rng = rand::thread_rng();
       chip8.set_v_reg(opcode.x, rng.gen::<u8>() & opcode.kk)
@@ -224,9 +223,3 @@ pub fn execute(opcode: Opcode, chip8: &mut Chip8, display: &mut Display){
     _ => println!("Opcode Not Handled")
   }
 }
-
-
-/* TODO:
-set up timers, keyboard map
-write tests for chip8 and cpu.
-  */
