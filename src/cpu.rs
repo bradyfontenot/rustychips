@@ -131,8 +131,9 @@ pub fn execute(opcode: Opcode, chip8: &mut Chip8, display: &mut Display){
           chip8.set_v_reg(0xF, 1);
         }
       },
-      0x000E => { // TODO: RESARCH MORE! NOT FINAL
-        chip8.set_v_reg(0xF, chip8.v_register(opcode.x) & 0xF0);
+      0x000E => {
+        let vf = (chip8.v_register(opcode.x) >> 7) & 1;
+        chip8.set_v_reg(0xF, vf);
         chip8.set_v_reg(opcode.x, chip8.v_register(opcode.x) << 1);
       },
       _ => println!("0x8000 Not Handled")
