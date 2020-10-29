@@ -99,10 +99,10 @@ pub fn execute(opcode: Opcode, chip8: &mut Chip8, display: &mut Display){
       (val, false) => chip8.set_v_reg(opcode.x, val)  // Vx + NN
     },
     0x8000 => match opcode.n {
-      0x0000 => chip8.set_v_reg(opcode.x, opcode.y as u8),
-      0x0001 => chip8.set_v_reg(opcode.x, (opcode.x | opcode.y) as u8),
-      0x0002 => chip8.set_v_reg(opcode.x, (opcode.x & opcode.y) as u8),
-      0x0003 => chip8.set_v_reg(opcode.x, (opcode.x ^ opcode.y) as u8),
+      0x0000 => chip8.set_v_reg(opcode.x, chip8.v_register(opcode.y) as u8),
+      0x0001 => chip8.set_v_reg(opcode.x, (chip8.v_register(opcode.x) | chip8.v_register(opcode.y)) as u8),
+      0x0002 => chip8.set_v_reg(opcode.x, (chip8.v_register(opcode.x) & chip8.v_register(opcode.y)) as u8),
+      0x0003 => chip8.set_v_reg(opcode.x, (chip8.v_register(opcode.x) ^ chip8.v_register(opcode.y)) as u8),
       0x0004 => match (chip8.v_register(opcode.x)).overflowing_add(chip8.v_register(opcode.y)){
         (val, true) => {chip8.set_v_reg(opcode.x, val); 
           chip8.set_v_reg(0xF, 1);
