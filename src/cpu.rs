@@ -148,15 +148,23 @@ pub fn execute(opcode: Opcode, chip8: &mut Chip8, display: &mut Display){
       let addr = chip8.i_register();
       let mut y_coord: usize ;
       let mut x_coord: usize;
+      let mut sprite_byte: u8;
+      // let mut sprite_pixel: u8;
+
       chip8.set_v_reg(0xF, 0);
+      
       for y in 0..opcode.n {
         y_coord = ((chip8.v_register(opcode.y) + y) % 32) as usize;
-        let sprite = chip8.memory(addr + y as u16);
+        sprite_byte = chip8.memory(addr + y as u16);
+      
         for x in 0..8{
 
           x_coord = ((chip8.v_register(opcode.x) + x) % 64) as usize;
-          let val = display.pixels[y_coord][x_coord] & ((sprite >> (7-x)) & 1);
-          chip8.set_v_reg(0xF, val);
+          // let val = display.pixels[y_coord][x_coord] & ((sprite >> (7-x)) & 1);
+          let screen_pixel = (display.pixels[y_coord][x_coord] >> 7-x) & 1;
+          let sprite_pixel = (sprite_byte >> 7-x) & 1;
+          let vf = sprite_pixel ^ screen_pixel ;
+          chip8.set_v_reg(0xF, vf);
           // println!("Opcode: {:x}", opcode.code);
           // println!("Opcode.y: {}", opcode.y);
           // println!("Vy: {}", chip8.v_register(opcode.y));
@@ -164,9 +172,9 @@ pub fn execute(opcode: Opcode, chip8: &mut Chip8, display: &mut Display){
           // println!("X: {}", x_coord);
           // println!("Opcode.x: {}", opcode.x);
           // println!("Vx: {}", chip8.v_register(opcode.x));
-          // println!("VF: {}", chip8.v_register(0xF));
+          println!("VF: {}", chip8.v_register(0xF));
           // println!("*************************");
-          display.pixels[y_coord][x_coord] ^= (sprite >> 7-x) & 1;
+          display.pixels[y_coord][x_coord] ^= (sprite_byte >> 7-x) & 1;
 
         }
 
@@ -182,7 +190,8 @@ pub fn execute(opcode: Opcode, chip8: &mut Chip8, display: &mut Display){
       0x000A => println!("KeyOp TODO"), // LD Vx, K
       0x0015 => chip8.set_delay_timer(chip8.v_register(opcode.x)), // LD DT, Vx
       0x0018 => chip8.set_sound_timer(chip8.v_register(opcode.x)), // LD ST, Vx
-      0x001E => chip8.set_i_reg(chip8.i_register() + opcode.x as u16),  // ADD I, Vx
+      0x001E => chip8.set_i_reg(chip8.i_register() + chip8.v_register(opcode.x) as u16),  // ADD I, Vx
+      // TODO: FIX \/
       0x0029 => chip8.set_i_reg(chip8.fonts[chip8.v_register(opcode.x) as usize] as u16),
       0x0033 => {
         let register = chip8.v_register(opcode.x);
