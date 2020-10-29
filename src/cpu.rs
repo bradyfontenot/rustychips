@@ -185,15 +185,27 @@ pub fn execute(opcode: Opcode, chip8: &mut Chip8, display: &mut Display){
       0x001E => chip8.set_i_reg(chip8.i_register() + opcode.x as u16),  // ADD I, Vx
       0x0029 => chip8.set_i_reg(chip8.fonts[chip8.v_register(opcode.x) as usize] as u16),
       0x0033 => {
-        
-      }, // LD B, Vx
+        let register = chip8.v_register(opcode.x);
+
+        // hundreds - / 100
+        let hundreds = register / 100;
+        chip8.set_memory(chip8.i_register(), hundreds);
+
+        // tens - / 10, % 10
+        let tens = (register / 10 ) % 10;
+        chip8.set_memory(chip8.i_register() + 1, tens);
+
+        // ones - % 10
+        let ones = register % 10;
+        chip8.set_memory(chip8.i_register() + 2, ones);
+      },
       0x0055 => {
         for i in 0..opcode.x + 1 {
           chip8.set_memory(chip8.i_register() + i as u16, chip8.v_register(i));
         }
       },
       0x0065 => {
-        for i in 0..opcode.x+ 1 {
+        for i in 0..opcode.x + 1 {
           chip8.set_v_reg(i, chip8.memory(chip8.i_register() + i as u16));
         }
       },
