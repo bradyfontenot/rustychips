@@ -1,4 +1,4 @@
-/target
-/roms_
-/roms
+target/
+roms_/
+roms/
 /src/opcode.rs
