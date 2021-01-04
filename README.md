@@ -15,7 +15,9 @@ Specifications: [Cowgod's Chip-8 Technicl Reference](http://devernay.free.fr/hac
 &nbsp;
 
 ## Functionality Still To Be Implemented
-- [ ] key press events
+- [x] key press events
+- [ ] track down collision bug.
+- [ ] fix font set opcode
 - [ ] sounds
 - [ ] move opcode instructions to functions in separate file
 - [ ] clean up debug print statements
