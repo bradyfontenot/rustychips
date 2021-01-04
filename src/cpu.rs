@@ -2,6 +2,7 @@ use std::fs::File;
 use std::io;
 use std::io::prelude::*;  
 use crate::chip8::Chip8;
+use crate::input::Input;
 use rand::Rng;
 // use rand::prelude::*;
 
@@ -74,10 +75,10 @@ fn build_opcode(chip8: &mut Chip8) -> Opcode {
   }
 }
 
-pub fn execute(opcode: Opcode, chip8: &mut Chip8, display: &mut Display){
+pub fn execute(opcode: Opcode, chip8: &mut Chip8, display: &mut Display, input: &mut Input){
   match opcode.p {
     0x0000 => match opcode.kk {
-      0x00E0 => display.canvas.clear(),   // println!("0x00E0 Not Handled. TODO: Clear Screen."),
+      0x00E0 => display.canvas.clear(),
       0x00EE => {
         let addr = chip8.pop_stack();
         chip8.set_pc(addr)
@@ -150,7 +151,7 @@ pub fn execute(opcode: Opcode, chip8: &mut Chip8, display: &mut Display){
       let mut x_coord: usize;
       let mut sprite_byte: u8;
       // let mut sprite_pixel: u8;
-
+      let mut vf = 0;
       chip8.set_v_reg(0xF, 0);
       
       for y in 0..opcode.n {
@@ -158,40 +159,44 @@ pub fn execute(opcode: Opcode, chip8: &mut Chip8, display: &mut Display){
         sprite_byte = chip8.memory(addr + y as u16);
       
         for x in 0..8{
-
-          x_coord = ((chip8.v_register(opcode.x) + x) % 64) as usize;
-          // let val = display.pixels[y_coord][x_coord] & ((sprite >> (7-x)) & 1);
-          let screen_pixel = (display.pixels[y_coord][x_coord] >> 7-x) & 1;
-          let sprite_pixel = (sprite_byte >> 7-x) & 1;
-          let vf = sprite_pixel ^ screen_pixel ;
+          x_coord = ((chip8.v_register(opcode.x) as usize + x as usize) % 64) as usize;
+          let old_pixel = display.pixels[y_coord][x_coord];
+          let new_pixel = (sprite_byte >> 7-x) & 1;
+          display.pixels[y_coord][x_coord] = old_pixel ^ new_pixel;
+          vf |= new_pixel & old_pixel;
           chip8.set_v_reg(0xF, vf);
-          // println!("Opcode: {:x}", opcode.code);
-          // println!("Opcode.y: {}", opcode.y);
-          // println!("Vy: {}", chip8.v_register(opcode.y));
-          // println!("Y: {}", y_coord);
-          // println!("X: {}", x_coord);
-          // println!("Opcode.x: {}", opcode.x);
-          // println!("Vx: {}", chip8.v_register(opcode.x));
           println!("VF: {}", chip8.v_register(0xF));
-          // println!("*************************");
-          display.pixels[y_coord][x_coord] ^= (sprite_byte >> 7-x) & 1;
-
         }
 
       }
     },
     0xE000 => match opcode.kk {
-      0x009E => println!("KeyOp TODO"), // Keyop
-      0x00A1 => println!("KeyOp TODO"), // Keyop
-      _ => println!("0xE000 Not Handled")
+      // if keyOP down event = Vx skip instr (i.e. pc += 2)
+      0x009E => {
+        if input.key_press == chip8.v_register(opcode.x) {chip8.pc_plus_2()};
+        println!("9E => Want: {}, Pressed: {}", chip8.v_register(opcode.x), input.key_press);
+      },
+      0x00A1 => {
+        if input.key_press != chip8.v_register(opcode.x) {chip8.pc_plus_2()};
+        println!("A1 => Want: {}, Pressed: {}", chip8.v_register(opcode.x), input.key_press);
+      },
+      _ => ()
     },
     0xF000 => match opcode.kk {
       0x0007 => chip8.set_v_reg(opcode.x, chip8.delay_timer() as u8),
-      0x000A => println!("KeyOp TODO"), // LD Vx, K
-      0x0015 => chip8.set_delay_timer(chip8.v_register(opcode.x)), // LD DT, Vx
-      0x0018 => chip8.set_sound_timer(chip8.v_register(opcode.x)), // LD ST, Vx
-      0x001E => chip8.set_i_reg(chip8.i_register() + chip8.v_register(opcode.x) as u16),  // ADD I, Vx
-      // TODO: FIX \/
+      0x000A => {
+        println!("Looping Key: {}", input.key_press);
+        input.key_press = 0;
+        while input.key_press == 0{
+          input.handle_key_event(); 
+        };
+        chip8.set_v_reg(opcode.x, input.key_press);
+
+      },
+      0x0015 => chip8.set_delay_timer(chip8.v_register(opcode.x)), 
+      0x0018 => chip8.set_sound_timer(chip8.v_register(opcode.x)), 
+      0x001E => chip8.set_i_reg(chip8.i_register() + chip8.v_register(opcode.x) as u16),
+      // TODO: FIX \/ *****FONT*****
       0x0029 => chip8.set_i_reg(chip8.fonts[chip8.v_register(opcode.x) as usize] as u16),
       0x0033 => {
         let register = chip8.v_register(opcode.x);
@@ -218,8 +223,8 @@ pub fn execute(opcode: Opcode, chip8: &mut Chip8, display: &mut Display){
           chip8.set_v_reg(i, chip8.memory(chip8.i_register() + i as u16));
         }
       },
-      _ => println!("0xF000 Not Handled")
+      _ => ()
     },
-    _ => println!("Opcode Not Handled")
+    _ => ()
   }
 }
