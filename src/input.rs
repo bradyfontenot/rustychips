@@ -49,7 +49,6 @@ impl Input {
                 },
                 _ => continue 
             }
-            // self.key_press = 0;
         }
         1
     }
